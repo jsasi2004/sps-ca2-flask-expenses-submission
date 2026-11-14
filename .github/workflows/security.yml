@@ -77,7 +77,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install deps
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt pytest pyyaml
       - name: Seed test DB
         run: python seed.py
       - name: Run Custom Tests
