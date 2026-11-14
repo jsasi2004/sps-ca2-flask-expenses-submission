@@ -81,4 +81,6 @@ jobs:
       - name: Seed test DB
         run: python seed.py
       - name: Run Custom Tests
+        env:
+          PYTHONPATH: .
         run: pytest tests/test_security.py -v --tb=short --junitxml=test-results.xml
