@@ -1,0 +1,13 @@
+rules:
+  - id: flask-claims-missing-user-filter
+    pattern-either:
+      - pattern: |
+          $X.execute("SELECT ... FROM claims ...", ...)
+      - pattern: |
+          $X.execute("SELECT ... FROM claims ..." % ..., ...)
+    message: "Query on 'claims' table without user_id filter — potential IDOR"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-639"
+      owasp: "WSTG-ATHZ-04"
