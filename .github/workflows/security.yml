@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install deps
@@ -32,7 +32,7 @@ jobs:
       - name: Semgrep SAST
         run: semgrep --config p/python --config p/flask --config .semgrep/ --severity ERROR --sarif --output semgrep.sarif .
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@b5c5b8c6c9e5e5d5e5d5e5d5e5d5e5d5e5d5e5d5 # v3.28.15
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: semgrep.sarif
@@ -42,9 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install pip-audit
@@ -56,11 +56,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Gitleaks
-        uses: gitleaks/gitleaks-action@8209a36c8b5c8c8c8c8c8c8c8c8c8c8c8c8c8c8 # v2.5.2
+        uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -71,9 +71,9 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       APP_DB: /tmp/test_expenses.db
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install deps
