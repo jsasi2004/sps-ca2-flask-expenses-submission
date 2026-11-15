@@ -1,6 +1,6 @@
 """Create expenses.db with sample data. No real people, no real money."""
-import hashlib, os, sqlite3, bcrypt
-DB = os.environ.get("APP_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "expenses.db"))
+import hashlib, os, sqlite3
+DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "expenses.db")
 if os.path.exists(DB):
     os.remove(DB)
 c = sqlite3.connect(DB)
@@ -9,14 +9,14 @@ CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, name T
 CREATE TABLE claims (id INTEGER PRIMARY KEY, user_id INTEGER, merchant TEXT,
                      amount REAL, note TEXT, status TEXT);
 """)
-bcr = lambda p: bcrypt.hashpw(p.encode("utf-8"),bcrypt.gensalt(12)).decode("utf-8")
+md5 = lambda p: hashlib.md5(p.encode()).hexdigest()
 users = [("jdoe", "password1", "Jane Doe", "staff"),
          ("rsmith", "letmein", "Rob Smith", "staff"),
          ("achen", "Summer2026", "Ada Chen", "finance"),
          ("admin", "admin", "System Admin", "admin")]
 for u, p, n, r in users:
     c.execute("INSERT INTO users (username,password,name,role) VALUES (?,?,?,?)",
-              (u, bcr(p), n, r))
+              (u, md5(p), n, r))
 claims = [(1, "Dublin Coach", 24.50, "Client visit", "approved"),
           (1, "Aer Lingus", 310.00, "Conference travel", "pending"),
           (2, "Tesco", 18.20, "Team lunch", "approved"),

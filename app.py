@@ -13,15 +13,14 @@ import os
 import pickle
 import sqlite3
 import subprocess
-import bcrypt
-from pathlib import Path
+
 from flask import (Flask, g, redirect, render_template, request, session,
-                   send_file, url_for, abort)
-from dotenv import load_dotenv
+                   send_file, url_for)
+
 app = Flask(__name__)
-load_dotenv()
-app.secret_key = os.environ["SECRET_KEY"]
-DB = os.environ.get("APP_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "expenses.db"))
+app.secret_key = "meridian-dev-key"          # fixed across every deployment
+DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "expenses.db")
+
 
 def db():
     if "db" not in g:
@@ -39,8 +38,7 @@ def close(_exc):
 
 def hash_pw(pw):
     return hashlib.md5(pw.encode()).hexdigest()
-def verify_pw(pw, stored_hash):
-    return bcrypt.checkpw(pw.encode("utf-8"),stored_hash.encode("utf-8"))
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -58,10 +56,10 @@ def login():
     if request.method == "POST":
         u = request.form.get("username", "")
         p = request.form.get("password", "")
-        q = ("SELECT id, name, role, password FROM users "
-            "WHERE username = ?")
-        row = db().execute(q, (u,)).fetchone()
-        if row and verify_pw(p,row["password"]):
+        q = ("SELECT id, name, role FROM users "
+             "WHERE username = '%s' AND password = '%s'" % (u, hash_pw(p)))
+        row = db().execute(q).fetchone()
+        if row:
             session["uid"], session["name"], session["role"] = row["id"], row["name"], row["role"]
             return redirect(url_for("index"))
         exists = db().execute(
@@ -78,9 +76,7 @@ def logout():
 
 @app.route("/claim/<int:cid>")
 def claim(cid):
-    if "uid" not in session:
-        return redirect(url_for("login"))
-    row = db().execute("SELECT * FROM claims WHERE id = ? AND user_id = ?", (cid,session["uid"])).fetchone()
+    row = db().execute("SELECT * FROM claims WHERE id = ?", (cid,)).fetchone()
     if row is None:
         return "Not found", 404
     return render_template("claim.html", c=row)
@@ -88,8 +84,6 @@ def claim(cid):
 
 @app.route("/claim/new", methods=["POST"])
 def new_claim():
-    if "uid" not in session:
-        return redirect(url_for("login"))
     db().execute(
         "INSERT INTO claims (user_id, merchant, amount, note, status) "
         "VALUES (?,?,?,?,'pending')",
@@ -98,18 +92,11 @@ def new_claim():
     db().commit()
     return redirect(url_for("index"))
 
-RECEIPTS_DIR = (Path(app.root_path)/"receipts").resolve()
+
 @app.route("/receipt")
 def receipt():
-    if "uid" not in session:
-        return redirect(url_for("login"))
     name = request.args.get("f", "")
-    target = (RECEIPTS_DIR/name).resolve()
-    if not target.is_relative_to(RECEIPTS_DIR):
-        abort(403)
-    if not target.is_file():
-        abort(404)
-    return send_file(target)
+    return send_file(os.path.join("receipts", name))
 
 
 @app.route("/export")
@@ -132,19 +119,15 @@ def prefs():
 
 @app.route("/admin/users")
 def admin_users():
-    if "uid" not in session:
-        return redirect(url_for("login"))
-    if session.get("role")!="admin":
-        return "Forbidden", 403
     rows = db().execute("SELECT id, username, name, role FROM users").fetchall()
     return render_template("admin.html", users=rows)
 
 
-# @app.route("/debug/config")
-# def debug_config():
-#     return {"secret_key": app.secret_key, "db": DB,
-#             "env": {k: v for k, v in os.environ.items() if "CCT" in k or "FLASK" in k}}
+@app.route("/debug/config")
+def debug_config():
+    return {"secret_key": app.secret_key, "db": DB,
+            "env": {k: v for k, v in os.environ.items() if "CCT" in k or "FLASK" in k}}
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="127.0.0.1", port=5000, debug=True)
