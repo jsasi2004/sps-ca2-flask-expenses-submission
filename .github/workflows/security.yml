@@ -30,10 +30,13 @@ jobs:
         run: bandit -r app.py -b bandit-baseline.json --severity-level high --confidence-level high
       - name: Bandit SAST (Report)
         run: bandit -r app.py -f json -o bandit.json --exit-zero
-      - name: Semgrep SAST (Custom Rules Only - Gate)
-        run: semgrep --config .semgrep/ --severity ERROR --error --sarif -o semgrep.sarif .
-      - name: Semgrep SAST (Full Ruleset - Report)
-        run: semgrep --config p/python --config p/flask --config .semgrep/ --sarif -o semgrep-full.sarif .
+      - name: Semgrep SAST (Gate)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            semgrep --config p/python --config p/flask --config .semgrep/ --severity ERROR --baseline-commit origin/${{ github.base_ref }} --error --sarif -o semgrep.sarif .
+          else
+            semgrep --config .semgrep/ --severity ERROR --error --sarif -o semgrep.sarif .
+          fi
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@b7b84b636b4f90c9b31da1bc5f72bfadd5b31410  # v3
         if: always()
