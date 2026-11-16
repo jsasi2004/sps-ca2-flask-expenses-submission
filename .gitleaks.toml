@@ -1,3 +1,6 @@
+[extend]
+useDefault = true
+
 [allowlist]
   description = "Allow seeded test credentials in seed.py and tests/policy.yaml"
   paths = [
