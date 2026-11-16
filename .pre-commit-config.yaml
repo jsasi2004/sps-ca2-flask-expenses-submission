@@ -1,0 +1,33 @@
+# Stage 1: Local pre-commit hooks (developer machine)
+# Run: pre-commit install && pre-commit run --all-files
+
+repos:
+  # Gitleaks - secret detection
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.3
+    hooks:
+      - id: gitleaks
+        name: gitleaks
+        entry: gitleaks detect --no-banner --verbose
+        language: system
+        types: [text]
+        exclude: ^tests/policy\.yaml$
+
+  # Ruff - fast Python linter (replaces flake8, isort, black)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff-format
+
+  # Bandit - SAST for Python
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.4
+    hooks:
+      - id: bandit
+        name: bandit
+        args: [-r, app.py, -ll, --severity-level, high, --confidence-level, high]
+        files: ^app\.py$
