@@ -56,7 +56,7 @@ jobs:
       - name: Install pip-audit
         run: pip install pip-audit
       - name: SCA Scan
-        run: pip-audit -r requirements.txt -f json -o pip-audit.json --desc on
+        run: pip-audit -r requirements.txt --desc on
 
   secrets:
     runs-on: ubuntu-latest
