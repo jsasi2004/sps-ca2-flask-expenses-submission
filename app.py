@@ -23,7 +23,7 @@ app = Flask(__name__)
 load_dotenv()
 app.secret_key = os.environ["SECRET_KEY"]
 DB = os.environ.get("APP_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "expenses.db"))
-
+BACKUP_AWS_KEY = "AKIAIOSFODNN7EXAMPLE"
 
 def db():
     if "db" not in g:
