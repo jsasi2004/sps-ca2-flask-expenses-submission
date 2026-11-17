@@ -101,7 +101,14 @@ def new_claim():
          request.form.get("amount"), request.form.get("note")))
     db().commit()
     return redirect(url_for("index"))
-
+@app.route("/claim/<int:cid>/delete", methods=["POST"])
+def delete_claim(cid):
+    if "uid" not in session:
+        return redirect(url_for("login"))
+    # Planted miss: missing AND user_id = ? ownership check (CWE-639)
+    db().execute("DELETE FROM claims WHERE id = ?", (cid,))
+    db().commit()
+    return redirect(url_for("index"))
 
 RECEIPTS_DIR = (Path(app.root_path)/"receipts").resolve()
 @app.route("/receipt")
